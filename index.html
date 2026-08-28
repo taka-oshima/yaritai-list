@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- スマホでも見やすくするための設定 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>やりたいことリスト</title>
+<style>
+  /* ページ全体の見た目 */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+    background-color: #f5f6fa;
+    margin: 0;
+    padding: 16px;
+    color: #333;
+  }
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  /* 入力フォームのカード */
+  .form-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .form-row {
+    margin-bottom: 12px;
+  }
+  .form-row label {
+    display: block;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+  }
+  .form-row input,
+  .form-row select {
+    width: 100%;
+    padding: 8px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  #addButton {
+    width: 100%;
+    padding: 12px;
+    background-color: #3498db;
+    color: #fff;
+    font-weight: bold;
+    margin-top: 4px;
+  }
+  #addButton:hover {
+    background-color: #2980b9;
+  }
+
+  /* 合計金額の表示 */
+  .summary {
+    background: #2c3e50;
+    color: #fff;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+  }
+  .summary .total-amount {
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  /* リストの各項目カード */
+  .item-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .item-card.done {
+    opacity: 0.6;
+  }
+  .item-info .item-name {
+    font-size: 17px;
+    font-weight: bold;
+  }
+  .item-card.done .item-name {
+    text-decoration: line-through;
+  }
+  .item-info .item-detail {
+    font-size: 13px;
+    color: #777;
+    margin-top: 4px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin-right: 6px;
+  }
+  .badge.category {
+    background-color: #e8f4fd;
+    color: #2980b9;
+  }
+  .badge.done-true {
+    background-color: #dff5e1;
+    color: #27ae60;
+  }
+  .badge.done-false {
+    background-color: #fdeeda;
+    color: #e67e22;
+  }
+  .item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-left: 10px;
+  }
+  .item-actions button {
+    padding: 6px 10px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .toggle-btn {
+    background-color: #27ae60;
+    color: #fff;
+  }
+  .delete-btn {
+    background-color: #e74c3c;
+    color: #fff;
+  }
+  .empty-message {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>やりたいことリスト</h1>
+
+  <!-- ===== 新しい項目を追加するフォーム ===== -->
+  <div class="form-card">
+    <div class="form-row">
+      <label for="inputName">やりたいこと(名前)</label>
+      <input type="text" id="inputName" placeholder="例: 沖縄旅行">
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row">
+        <label for="inputBudget">予算(だいたいの金額・円)</label>
+        <input type="number" id="inputBudget" placeholder="例: 50000" min="0">
+      </div>
+      <div class="form-row">
+        <label for="inputPlace">場所</label>
+        <input type="text" id="inputPlace" placeholder="例: 沖縄">
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row">
+        <label for="inputCategory">カテゴリ</label>
+        <select id="inputCategory">
+          <option value="旅行">旅行</option>
+          <option value="グルメ">グルメ</option>
+          <option value="趣味">趣味</option>
+          <option value="買い物">買い物</option>
+          <option value="学び">学び</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="inputStatus">達成状況</label>
+        <select id="inputStatus">
+          <option value="false">未達成</option>
+          <option value="true">達成済み</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="addButton" onclick="addItem()">追加する</button>
+  </div>
+
+  <!-- ===== 合計金額の表示 ===== -->
+  <div class="summary">
+    <span>合計金額(全項目)</span>
+    <span class="total-amount" id="totalAmount">0円</span>
+  </div>
+
+  <!-- ===== 項目リストの表示場所 ===== -->
+  <div id="listArea"></div>
+</div>
+
+<script>
+  // ------------------------------------------------------
+  // やりたいことリストのデータを管理するスクリプト
+  // データは配列(itemsという名前)で持ち、
+  // ブラウザのlocalStorageに保存することでページを再読込しても消えないようにする
+  // ------------------------------------------------------
+
+  // localStorageに保存するときのキー名
+  const STORAGE_KEY = "yaritaiListItems";
+
+  // 現在の項目一覧を入れておく配列
+  // 各項目は { id, name, budget, place, category, done } の形のオブジェクト
+  let items = [];
+
+  // ページを開いたときにlocalStorageから読み込む
+  function loadItems() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      items = JSON.parse(saved);
+    }
+  }
+
+  // 現在の配列をlocalStorageに保存する
+  function saveItems() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
+
+  // 「追加する」ボタンが押されたときの処理
+  function addItem() {
+    const nameInput = document.getElementById("inputName");
+    const budgetInput = document.getElementById("inputBudget");
+    const placeInput = document.getElementById("inputPlace");
+    const categoryInput = document.getElementById("inputCategory");
+    const statusInput = document.getElementById("inputStatus");
+
+    const name = nameInput.value.trim();
+
+    // 名前が空のときは追加しない
+    if (name === "") {
+      alert("やりたいことの名前を入力してください。");
+      return;
+    }
+
+    // 予算は入力がなければ0円として扱う
+    const budget = budgetInput.value === "" ? 0 : Number(budgetInput.value);
+
+    // 新しい項目オブジェクトを作る
+    const newItem = {
+      id: Date.now(), // 現在時刻を使って重複しないIDにする
+      name: name,
+      budget: budget,
+      place: placeInput.value.trim(),
+      category: categoryInput.value,
+      done: statusInput.value === "true"
+    };
+
+    // 配列に追加して保存・再表示
+    items.push(newItem);
+    saveItems();
+    renderItems();
+
+    // フォームを入力しやすい状態に戻す
+    nameInput.value = "";
+    budgetInput.value = "";
+    placeInput.value = "";
+    categoryInput.value = "旅行";
+    statusInput.value = "false";
+    nameInput.focus();
+  }
+
+  // 達成状況を切り替える(未達成 ⇔ 達成済み)
+  function toggleDone(id) {
+    const target = items.find(item => item.id === id);
+    if (target) {
+      target.done = !target.done;
+      saveItems();
+      renderItems();
+    }
+  }
+
+  // 項目を削除する
+  function deleteItem(id) {
+    if (!confirm("この項目を削除しますか?")) {
+      return;
+    }
+    items = items.filter(item => item.id !== id);
+    saveItems();
+    renderItems();
+  }
+
+  // 金額を「1,000円」のような見やすい形式にする
+  function formatYen(amount) {
+    return amount.toLocaleString("ja-JP") + "円";
+  }
+
+  // 画面上のリストと合計金額を、現在のitems配列の内容で描き直す
+  function renderItems() {
+    const listArea = document.getElementById("listArea");
+    const totalAmountEl = document.getElementById("totalAmount");
+
+    // 合計金額を計算する(全項目の予算を足し合わせる)
+    const total = items.reduce((sum, item) => sum + item.budget, 0);
+    totalAmountEl.textContent = formatYen(total);
+
+    // 項目が1つもないときのメッセージ
+    if (items.length === 0) {
+      listArea.innerHTML = '<div class="empty-message">まだ項目がありません。上のフォームから追加してみましょう。</div>';
+      return;
+    }
+
+    // 各項目のHTMLを作って、まとめて表示する
+    listArea.innerHTML = items.map(item => {
+      const doneClass = item.done ? "done" : "";
+      const doneBadgeClass = item.done ? "done-true" : "done-false";
+      const doneText = item.done ? "達成済み" : "未達成";
+      const toggleButtonText = item.done ? "未達成に戻す" : "達成にする";
+      const placeText = item.place ? item.place : "未設定";
+
+      return `
+        <div class="item-card ${doneClass}">
+          <div class="item-info">
+            <div class="item-name">${escapeHtml(item.name)}</div>
+            <div class="item-detail">
+              <span class="badge category">${escapeHtml(item.category)}</span>
+              <span class="badge done-${item.done}">${doneText}</span>
+            </div>
+            <div class="item-detail">
+              予算: ${formatYen(item.budget)} / 場所: ${escapeHtml(placeText)}
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="toggle-btn" onclick="toggleDone(${item.id})">${toggleButtonText}</button>
+            <button class="delete-btn" onclick="deleteItem(${item.id})">削除</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  // 名前や場所に< >などが入っていても安全に表示するための関数
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // ページが読み込まれたら、保存済みデータを読み込んで表示する
+  loadItems();
+  renderItems();
+</script>
+
+</body>
+</html>
